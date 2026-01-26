@@ -80,8 +80,8 @@ Sans interaction clavier.
 * **Ollama (local)**
 * **LLMs utilisés** :
 
-  * Agent Logic / Design : `huihui_ai/dolphin3-abliterated`
-  * Agent Décideur : `llama3.2:1b`
+  * Agent Logic / Design : `llama3.2:1b`
+  * Agent Décideur : `deepseek-r1:latest`
 
 ---
 
@@ -90,8 +90,7 @@ Sans interaction clavier.
 ### 1️⃣ Cloner le projet
 
 ```bash
-git clone <repo-url>
-cd agentic-ai-orchestrator
+git clone https://github.com/theorick/Decisio_ia.git
 ```
 
 ### 2️⃣ Installer les dépendances
@@ -111,7 +110,7 @@ ollama serve
 Et que les modèles sont installés :
 
 ```bash
-ollama pull huihui_ai/dolphin3-abliterated
+ollama pull deepseek-r1:latest
 ollama pull llama3.2:1b
 ```
 
@@ -160,7 +159,7 @@ Ce projet explore une approche **anti-hallucination**, orientée **qualité logi
 
 * Support multi-projets
 * Métriques de qualité du code
-* Agents spécialisés (QA, sécurité, performance)
+* Agents spécialisés (sécurité, performance, ...)
 * Interface web / dashboard
 
 ---
