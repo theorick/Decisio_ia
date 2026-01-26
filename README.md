@@ -119,7 +119,7 @@ ollama pull llama3.2:1b
 ## ▶️ Exécution
 
 ```bash
-python main.py
+python agent.py
 ```
 
 Le programme généré sera écrit dans :
