@@ -11,6 +11,120 @@ OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "llama3.2:1b"
 TARGET_FILE = "programme.py"
 
+BASE_PROMPT = """
+🧱 Éléments du jeu
+1. Fenêtre de jeu
+
+Taille fixe (ex: 800x600)
+
+Fond uni (noir ou autre)
+
+Boucle principale de jeu (game loop)
+
+2. Raquette (pong)
+
+Positionnée sur le côté gauche de l’écran
+
+Déplacement vertical uniquement
+
+Ne peut pas sortir de l’écran
+
+Vitesse de déplacement constante
+
+3. Balle
+
+Forme : cercle
+
+Position initiale : centre de l’écran
+
+Vitesse constante en X et Y
+
+Se déplace automatiquement
+
+🔄 Règles de mouvement et collisions
+Rebond sur les murs
+
+Si la balle touche :
+
+le mur haut → inversion de la vitesse verticale
+
+le mur bas → inversion de la vitesse verticale
+
+Rebond sur la raquette
+
+Si la balle touche la raquette :
+
+inversion de la vitesse horizontale
+
+la balle repart dans l’autre sens
+
+Sortie de l’écran
+
+Si la balle dépasse le bord gauche ou droit :
+
+le jeu peut soit :
+
+se terminer
+
+soit réinitialiser la balle (au choix de l’implémentation)
+
+🔁 Boucle principale du jeu
+
+La boucle doit :
+
+Lire les événements clavier
+
+Mettre à jour la position de la raquette
+
+Mettre à jour la position de la balle
+
+Gérer les collisions
+
+Rafraîchir l’affichage
+
+Limiter le nombre d’images par seconde (FPS)
+
+🧪 Mode test (optionnel mais recommandé)
+
+Un mode test automatique sans interaction clavier
+
+La raquette peut rester immobile
+
+Permet de vérifier :
+
+déplacement de la balle
+
+rebonds sur les murs
+
+absence de crash
+
+⚠️ Contraintes importantes
+
+Pas de input()
+
+Pas de blocage de la boucle principale
+
+Code simple et lisible
+
+Pas de fonctionnalités inutiles (score, menus, sons non obligatoires)
+
+Une seule raquette (joueur unique)
+
+✅ Critères de validation
+
+Le Pong est valide si :
+
+La fenêtre s’ouvre correctement
+
+La balle bouge en continu
+
+Les rebonds fonctionnent
+
+Les touches z et s contrôlent la raquette
+
+Le programme ne plante pas
+"""
+
 #Agent IA
 def ask_ollama(prompt):
     headers = {"Content-Type": "application/json"}
@@ -224,123 +338,6 @@ def interpret_decision(decision_text):
         return "REJECT", "Décision inconnue"
 
     return decision, reason
-
-
-BASE_PROMPT = """
-🧱 Éléments du jeu
-1. Fenêtre de jeu
-
-Taille fixe (ex: 800x600)
-
-Fond uni (noir ou autre)
-
-Boucle principale de jeu (game loop)
-
-2. Raquette (pong)
-
-Positionnée sur le côté gauche de l’écran
-
-Déplacement vertical uniquement
-
-Ne peut pas sortir de l’écran
-
-Vitesse de déplacement constante
-
-3. Balle
-
-Forme : cercle
-
-Position initiale : centre de l’écran
-
-Vitesse constante en X et Y
-
-Se déplace automatiquement
-
-🔄 Règles de mouvement et collisions
-Rebond sur les murs
-
-Si la balle touche :
-
-le mur haut → inversion de la vitesse verticale
-
-le mur bas → inversion de la vitesse verticale
-
-Rebond sur la raquette
-
-Si la balle touche la raquette :
-
-inversion de la vitesse horizontale
-
-la balle repart dans l’autre sens
-
-Sortie de l’écran
-
-Si la balle dépasse le bord gauche ou droit :
-
-le jeu peut soit :
-
-se terminer
-
-soit réinitialiser la balle (au choix de l’implémentation)
-
-🔁 Boucle principale du jeu
-
-La boucle doit :
-
-Lire les événements clavier
-
-Mettre à jour la position de la raquette
-
-Mettre à jour la position de la balle
-
-Gérer les collisions
-
-Rafraîchir l’affichage
-
-Limiter le nombre d’images par seconde (FPS)
-
-🧪 Mode test (optionnel mais recommandé)
-
-Un mode test automatique sans interaction clavier
-
-La raquette peut rester immobile
-
-Permet de vérifier :
-
-déplacement de la balle
-
-rebonds sur les murs
-
-absence de crash
-
-⚠️ Contraintes importantes
-
-Pas de input()
-
-Pas de blocage de la boucle principale
-
-Code simple et lisible
-
-Pas de fonctionnalités inutiles (score, menus, sons non obligatoires)
-
-Une seule raquette (joueur unique)
-
-✅ Critères de validation
-
-Le Pong est valide si :
-
-La fenêtre s’ouvre correctement
-
-La balle bouge en continu
-
-Les rebonds fonctionnent
-
-Les touches z et s contrôlent la raquette
-
-Le programme ne plante pas
-"""
-
-
 
 if __name__ == "__main__":
     prompt = BASE_PROMPT
