@@ -125,34 +125,6 @@ Les touches z et s contrôlent la raquette
 Le programme ne plante pas
 """
 
-#Agent IA
-def ask_ollama(prompt):
-    headers = {"Content-Type": "application/json"}
-    data = {
-        "model": MODEL,
-        "prompt": prompt,
-        "temperature": 0.6,
-        "num_ctx": 4096,
-        "max_tokens": 2048,
-        "stream": True
-    }
-
-    response_text = ""
-
-    with requests.post(OLLAMA_URL, json=data, headers=headers, stream=True) as r:
-        r.raise_for_status()
-        for line in r.iter_lines():
-            if line:
-                try:
-                    j = json.loads(line.decode("utf-8"))
-                    response_text += j.get("response", "")
-                    if j.get("done"):
-                        break
-                except json.JSONDecodeError:
-                    pass
-
-    return response_text.strip()
-
 def agent_logic(prompt):
     prompt += f"""
                 Tu es un développeur Python.
