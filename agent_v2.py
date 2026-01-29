@@ -11,33 +11,6 @@ OLLAMA_URL = "http://localhost:11434/api/generate"
 MODEL = "huihui_ai/dolphin3-abliterated:latest"
 TARGET_FILE = "programme.py"
 
-#Agent IA
-def ask_ollama(prompt):
-    headers = {"Content-Type": "application/json"}
-    data = {
-        "model": MODEL,
-        "prompt": prompt,
-        "temperature": 0.6,
-        "num_ctx": 4096,
-        "max_tokens": 2048,
-        "stream": True
-    }
-
-    response_text = ""
-
-    with requests.post(OLLAMA_URL, json=data, headers=headers, stream=True) as r:
-        r.raise_for_status()
-        for line in r.iter_lines():
-            if line:
-                try:
-                    j = json.loads(line.decode("utf-8"))
-                    response_text += j.get("response", "")
-                    if j.get("done"):
-                        break
-                except json.JSONDecodeError:
-                    pass
-
-    return response_text.strip()
 
 def agent_logic(prompt):
     prompt += f"""
@@ -49,7 +22,6 @@ def agent_logic(prompt):
                 Génère UNIQUEMENT du code Python valide.
                 """
 
-
     headers = {"Content-Type": "application/json"}
     data = {
         "model": MODEL,
@@ -75,6 +47,7 @@ def agent_logic(prompt):
                     pass
 
     return response_text.strip()
+
 
 def agent_design(prompt):
     prompt += """
@@ -114,37 +87,50 @@ def agent_design(prompt):
 
     return response_text.strip()
 
-def chef_orchestre(origine, code, design):
+
+def garde_fou(origine, code, design):
     headers = {"Content-Type": "application/json"}
 
     prompt = f"""
     SYSTEM:
-    Tu es un agent décideur STRICT.
-    Tu NE PARLES PAS.
-    Tu NE COMMENTES PAS.
-    Tu NE FOURNIS PAS DE CODE.
+    Tu es un agent Garde-Fou STRICT.
+    Tu NE PARLES PAS, tu NE COMMENTES PAS, tu NE FOURNIS PAS DE CODE.
     Tu RÉPONDS UNIQUEMENT EN JSON VALIDE.
 
-    Si tu réponds autre chose que du JSON → tu as échoué.
+    TÂCHE:
+    Vérifie la cohérence entre l'intention initiale et le livrable fourni.
+    Décide si le livrable doit être ACCEPTÉ, REJETÉ ou ESCALADÉ à un humain.
 
-    FORMAT OBLIGATOIRE (et rien d’autre) :
+    CRITÈRES:
+    1. Respect du Project Context :
+       - Objectif
+       - Périmètre
+       - Contraintes
+       - Non-négociables
+    2. Respect du Mission Contract :
+       - Livrables attendus
+       - Ce qui est hors périmètre
+       - Limites explicites
+
+    FORMAT OBLIGATOIRE:
     {{
-      "decision": "ACCEPT" ou "REJECT",
-      "reason": "phrase courte"
+      "decision" : "ACCEPT" | "REJECT" | "ESCALATE",
+      "reason": 'phrase courte expliquant la décision',
+      "trace": [liste courte des points vérifiés ou dérives détectées]
     }}
 
-    SPECIFICATION :
-    {design}
+    INPUT FOURNI:
+    Project Context : {origine}
+    Mission Contract : {design}
+    Livrable : {code}
 
-    CODE :
-    {code}
-
-    RAPPEL :
+    RAPPEL:
     - Aucun texte hors JSON
     - Aucun markdown
     - Aucun commentaire
-    - Aucun bloc ```python```
     - JSON strict uniquement
+    - Aucun code dans la réponses
+    - Répond uniquement avec du JSON
     """
 
     data = {
@@ -172,16 +158,19 @@ def chef_orchestre(origine, code, design):
 
     return response_text.strip()
 
-#Extraction code plus décision
+
+# Extraction code plus décision
 def extract_code(text):
     match = re.search(r"```python(.*?)```", text, re.S)
     if match:
         return match.group(1).strip()
     return text.strip()
 
+
 def write_code(code):
     with open(TARGET_FILE, "w", encoding="utf-8") as f:
         f.write(code)
+
 
 def run_code():
     return subprocess.run(
@@ -190,6 +179,7 @@ def run_code():
         text=True
 
     )
+
 
 def extract_json(text):
     # Cherche le bloc ```json ... ```
@@ -209,6 +199,7 @@ def extract_json(text):
             return None
 
     return None
+
 
 def interpret_decision(decision_text):
     data = extract_json(decision_text)
@@ -340,15 +331,13 @@ Les touches z et s contrôlent la raquette
 Le programme ne plante pas
 """
 
-
-
 if __name__ == "__main__":
     prompt = BASE_PROMPT
     iteration = 1
     ascii_banner = pyfiglet.figlet_format('Decisio_ia', font="3d-ascii", width=1500)
     print("\n", "-" * 70, "\n")
     print("" + ascii_banner + "")
-    print( "-" * 80, "\n")
+    print("-" * 80, "\n")
     print(f"\n🤖 Itération {iteration}")
     design_response = agent_design(prompt)
     print(f"\nDESIGN :\n{design_response}\n")
@@ -359,14 +348,15 @@ if __name__ == "__main__":
         logic_response = agent_logic(design_response)
         print(f"\nLOGIQUE :\n{logic_response}\n")
         code = extract_code(logic_response)
-        decideur_response = chef_orchestre(BASE_PROMPT, code, design_response)
-        print(f"\nDECIDEUR :\n{decideur_response}\n")
-        decision, reason = interpret_decision(decideur_response)
+        garde_fou_v = garde_fou(BASE_PROMPT, code, design_response)
+        print(f"\nGarde_fou :\n{garde_fou_v}\n")
+        decision, reason = interpret_decision(garde_fou_v)
+        if "ESCALATE" in garde_fou_v:
+            print(decision, "c'est a l'humain de gérer le problème")
+            break
         print(decision, reason)
 
-
-
-        if decision == "ACCEPT":
+        if "ACCEPT" in garde_fou_v:
             write_code(code)
             print("▶️ Exécution du programme...")
             result = run_code()
@@ -381,13 +371,13 @@ if __name__ == "__main__":
 
                 prompt = f"""
                 Voici un programme Python qui contient une erreur.
-                
+
                 CODE :
                 {code}
-                
+
                 ERREUR PYTHON :
                 {result.stderr}
-                
+
                 Corrige le programme.
                 Retourne UNIQUEMENT le code Python corrigé.
                 """
