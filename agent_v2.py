@@ -6,9 +6,9 @@ import time
 import re
 import pyfiglet
 
-MODEL_CHEF = 'llama3.2:1b'
 OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL = "huihui_ai/dolphin3-abliterated:latest"
+MODEL_CHEF = 'deepseek-r1:latest'
+MODEL = "llama3.2:1b"
 TARGET_FILE = "programme.py"
 
 
